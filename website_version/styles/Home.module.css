@@ -1,8 +1,9 @@
 /* styles/Home.module.css */
 
+/* 外層容器 */
 .container {
   font-family: Arial, sans-serif;
-  max-width: 600px;
+  max-width: 1200px; /* 寬度可以根據需求調整 */
   margin: 0 auto;
   padding: 20px;
 }
@@ -12,109 +13,215 @@
 }
 
 .apiKeyContainer {
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 20px;
 }
 
+.apiKeyWrapper {
+  position: relative;
+  flex: 1; /* 讓 input 撐開整個容器寬度 */
+}
+
+/* 顯示/隱藏按鈕 */
+.toggleApiKeyBtn {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.3rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* API Key 輸入框 */
 .input {
   width: 100%;
   padding: 6px;
   box-sizing: border-box;
-  padding-right: 30px; /* 確保右邊有足夠的空間來顯示驗證結果 */
+  padding-right: 30px; /* 右邊留空給眼睛 */
 }
 
 .inputStatus {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 16px;
+  font-size: 18px;
+  margin-left: 8px;
 }
-
 .success {
   color: green;
 }
-
 .error {
   color: red;
 }
 
-.table {
-  width: 100%;
-  margin-top: 20px;
-  border-collapse: collapse;
+.commentLengthContainer {
+  margin-bottom: 20px;
 }
 
-.th, .td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-.th {
-  background-color: #f2f2f2;
-}
-
-.button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.button:hover {
-  background-color: #45a049;
-}
-
-.buttonGroup {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
+/* 上傳、新增學生按鈕 */
 .uploadButton {
   margin-top: 20px;
   padding: 10px 0;
 }
+.addButton {
+  margin-left: 0.5rem;
+  background-color: #609966;
+  color: #fff;
+  border: none;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.addButton:hover {
+  background-color: #4e8056;
+}
 
+/* 常見特質容器 */
+.traitsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  max-height: 4rem; /* 兩行 */
+  overflow-x: auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+}
+.traitButton {
+  background-color: #ddd;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.addTraitBtn {
+  background-color: #ffa500;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* 表格 & 外層 */
+.tableWrapper {
+  max-height: 400px;
+  overflow: auto;
+  margin-top: 20px;
+  border: 1px solid #ddd;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0;
+}
+
+/* Sticky header */
+.tableHead th {
+  position: sticky;
+  top: 0;
+  background-color: #f2f2f2;
+  z-index: 10;
+}
+.th, .td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+/* 拖曳欄寬度更窄 */
+.tdHandle {
+  width: 1.5rem; /* 調整到您想要的寬度 */
+  text-align: center;
+  cursor: move;
+  user-select: none;
+  color: #666;
+}
+
+/* 操作欄位更窄 */
+.tdOperation {
+  width: 5rem; /* 視需求調整，可再更小 */
+}
+
+/* 裡面按鈕上下排列 */
+.operationBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Input/textarea */
+.tableInput, .tableTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+/* 單獨重生 / 刪除按鈕 */
+.regenButton {
+  background-color: #efefef;
+  border: 1px solid #ccc;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 4px;
+}
+.regenButton:hover {
+  background-color: #e2e2e2;
+}
+
+/* 生成、暫停、下載 按鈕群組 */
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 20px;
+}
+.button {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.button:hover {
+  background-color: #45a049;
+}
+
+/* Footer */
 .footer {
   margin-top: 40px;
   text-align: center;
   font-size: 14px;
   color: #777;
 }
-
 .copyright {
   margin-bottom: 10px;
 }
-
 .withLove {
   color: #000;
   display: inline-block;
   margin: 0 5px;
 }
-
 .author a {
   color: #0070f3;
   text-decoration: none;
 }
-
 .author a:hover {
   text-decoration: underline;
 }
-
 .projectInfo a {
   color: #0070f3;
   text-decoration: none;
 }
-
 .projectInfo a:hover {
   text-decoration: underline;
 }
 
+/* 右上角的使用教學按鈕 */
 .helpButton {
   position: fixed;
   top: 20px;
@@ -126,12 +233,13 @@
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
+  z-index: 9000;
 }
-
 .helpButton:hover {
   background-color: #005bb5;
 }
 
+/* Modal & Overlay: z-index 提高，確保不會被 sticky header 蓋到 */
 .modal {
   position: absolute;
   top: 50%;
@@ -143,9 +251,9 @@
   max-width: 500px;
   width: 100%;
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
-  font-family: Arial, sans-serif; /* 添加這行以指定字體樣式 */
+  font-family: Arial, sans-serif;
+  z-index: 10001;
 }
-
 .overlay {
   background-color: rgba(0, 0, 0, 0.7);
   position: fixed;
@@ -153,8 +261,8 @@
   left: 0;
   right: 0;
   bottom: 0;
+  z-index: 10000;
 }
-
 .closeButton {
   background: transparent;
   border: none;
@@ -164,18 +272,15 @@
   right: 10px;
   cursor: pointer;
 }
-
 .modalContent {
   max-height: 60vh;
   overflow-y: auto;
 }
-
 .image {
   width: 100%;
   margin-top: 10px;
   margin-bottom: 10px;
 }
-
 .highlight {
   background-color: #d2e9fc;
   padding: 2px 4px;
