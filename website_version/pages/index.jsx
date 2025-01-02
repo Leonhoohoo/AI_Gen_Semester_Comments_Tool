@@ -59,15 +59,6 @@ export default function Home() {
   const copyrightYear =
     currentYear === 2024 ? '2024' : `2024 – ${currentYear}`;
 
-  // 一進頁面時，嘗試從 localStorage 拿 key
-  useEffect(() => {
-    const storedApiKey = localStorage.getItem('geminiApiKey');
-    if (storedApiKey) {
-      setApiKey(storedApiKey);
-      validateApiKey(storedApiKey);
-    }
-  }, []);
-
   // ======== API Key ========
   const toggleShowApiKey = () => {
     setShowApiKey((prev) => !prev);
@@ -75,7 +66,6 @@ export default function Home() {
   const handleApiKeyChange = (e) => {
     const key = e.target.value;
     setApiKey(key);
-    localStorage.setItem('geminiApiKey', key);
     validateApiKey(key);
   };
   const validateApiKey = async (key) => {
