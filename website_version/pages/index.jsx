@@ -22,6 +22,8 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import styles from '../styles/Home.module.css';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 
+import prompts from '../config/prompts';
+
 Modal.setAppElement('#__next');
 
 export default function Home() {
@@ -309,43 +311,8 @@ export default function Home() {
 
   // 產生 Prompt
   const buildSystemPrompt = (length) => {
-    let lengthHint = '';
-    switch (length) {
-      case 'short':
-        lengthHint = '儘量寫 2~3 句話的短評，';
-        break;
-      case 'medium':
-        lengthHint = '儘量寫 4~5 句話的中等長度評語，';
-        break;
-      case 'long':
-        lengthHint = '儘量寫 6~8 句話的長評，';
-        break;
-      default:
-        lengthHint = '儘量寫 2~3 句話的短評，';
-    }
-    return `
-你是一位年資深厚的國小班導師，對學生的優點、個人特質與行為都相當了解，現在你需要在學期末為學生撰寫個人化的、正向的學期評語。
-請特別注意以下幾點：
-1. 使用繁體中文以及台灣用語。
-2. 評語中避免過度重複「是個...的孩子」，嘗試使用多種句型。
-3. 盡量根據學生的特質給予正向回饋與鼓勵。
-4. 不要使用任何表情符號或顏文字。
-5. ${lengthHint}儘量使用自然、生動的文字，展現專業且親切的口吻。
-
-以下是評語撰寫範例：
-
-範例輸入1：
-["王小明", "聰明，協調性佳，體育不錯"]
-
-範例輸出1：
-小明擁有敏銳的學習能力，能迅速領悟新知識。在體育方面表現出不錯的協調能力，團隊合作也相當投入。
-
-範例輸入2：
-["陳小美", "心思細膩，語文能力佳，有潔癖"]
-
-範例輸出2：
-小美做事時相當細心，對於小細節特別留意，這樣的特質也在她的寫作中發光發熱。平時也能保持整潔，顯示出她對環境與自我要求的負責態度。
-`;
+    const prompt = prompts[length] || prompts['short']; // 預設使用 short
+    return prompt;
   };
 
   // 下載結果
