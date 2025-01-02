@@ -365,7 +365,7 @@ export default function Home() {
         />
         <meta
           name="keywords"
-          content="學期評語生成, 學生評語, 教師工具, AI 評語生成"
+          content="學期評語生成器, 學生評語, 教師工具, AI 評語生成, 期末評語生成器, 期末參考評語生成器"
         />
       </Head>
 
