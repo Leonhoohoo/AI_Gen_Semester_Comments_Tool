@@ -416,88 +416,129 @@ export default function Home() {
         overlayClassName={styles.overlay}
       >
         <h2>使用教學</h2>
-        <button onClick={closeModal} className={styles.closeButton}>
-          X
-        </button>
-        <div className={styles.modalContent}>
-          <h3>1. 建立 API Key</h3>
-          <p>
-            先到{' '}
-            <a
-              href="https://aistudio.google.com/app/apikey"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Google AI Studio
-            </a>{' '}
-            建立 API Key (如下圖)，接著將 API Key 複製然後貼到{' '}
-            <a
-              href="https://ai-comments.moon-jam.me"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              網頁
-            </a>{' '}
-            的框框中，並確認出現 ✅ 圖示，代表 API Key 設定成功。
-          </p>
-          <img
-            src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-1.png"
-            alt="Step 1"
-            className={styles.image}
-          />
-          <img
-            src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-2.png"
-            alt="Step 2"
-            className={styles.image}
-          />
-          <img
-            src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-3.png"
-            alt="Step 3"
-            className={styles.image}
-          />
-          <img
-            src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-4.png"
-            alt="Step 4"
-            className={styles.image}
-          />
-          <img
-            src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-5.png"
-            alt="Step 5"
-            className={styles.image}
-          />
+      <button onClick={closeModal} className={styles.closeButton}>
+        X
+      </button>
+      <div className={styles.modalContent}>
+        {/* 步驟 1：建立 API Key */}
+        <h3>1. 建立 API Key</h3>
+        <p>
+          先到{' '}
+          <a
+            href="https://aistudio.google.com/app/apikey"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Google AI Studio
+          </a>{' '}
+          建立 API Key (如下圖)，接著將 API Key 複製然後貼到{' '}
+          <a
+            href="https://ai-comments.moon-jam.me"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            網頁
+          </a>{' '}
+          的框框中，並確認出現 ✅ 圖示，代表 API Key 設定成功 (如果按照下圖無法順利創建，可以參考這個{' '}
+          <a
+            href="https://youtu.be/ehm3-xoJLsc"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            影片
+          </a>
+          )。
+        </p>
+        <img
+          src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-1.png"
+          alt="Step 1"
+          className={styles.image}
+        />
+        <img
+          src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-2.png"
+          alt="Step 2"
+          className={styles.image}
+        />
+        <img
+          src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-3.png"
+          alt="Step 3"
+          className={styles.image}
+        />
+        <img
+          src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-4.png"
+          alt="Step 4"
+          className={styles.image}
+        />
+        <img
+          src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-5.png"
+          alt="Step 5"
+          className={styles.image}
+        />
 
-          <h3>2. 創建 Excel 檔</h3>
-          <p>
-            創建一個 Excel 檔，在 A 欄輸入學生的名字，B 欄輸入學生的幾個特質，類似如下的格式，可以參考{' '}
-            <a
-              href="https://github.com/moon-jam/AI_Gen_Semester_Comments_Tool/raw/main/sample.xlsx"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              sample.xlsx
-            </a>
-            。
-          </p>
-          <img
-            src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/sample_excel.png"
-            alt="Sample Excel"
-            className={styles.image}
-          />
+        {/* 方法選擇 */}
+        <h3>2. 選擇上傳學生名單的方法</h3>
+        <div className={styles.methods}>
+          {/* 方法一：上傳 Excel */}
+          <details>
+            <summary>方法一：上傳已經有學生名單的 Excel</summary>
+            <p>
+              創建一個 Excel 檔，在 A 欄輸入學生的名字，B 欄輸入學生的幾個特質，類似如下的格式，可以參考{' '}
+              <a
+                href="https://github.com/moon-jam/AI_Gen_Semester_Comments_Tool/raw/main/sample.xlsx"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                sample.xlsx
+              </a>
+              。
+            </p>
+            <img
+              src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/sample_excel.png"
+              alt="Sample Excel"
+              className={styles.image}
+            />
+            <p>
+              點擊網頁中的 <span className={styles.highlight}>選擇檔案</span> (
+              <span className={styles.highlight}>Choose File</span>)，選擇剛剛創建的 Excel 檔。
+            </p>
+          </details>
 
-          <h3>3. 上傳檔案並生成評語</h3>
-          <p>
-            點擊網頁中的{' '}
-            <span className={styles.highlight}>選擇檔案</span> (
-            <span className={styles.highlight}>Choose File</span>)，選擇剛剛創建的
-            Excel 檔，然後點擊下方的{' '}
-            <span className={styles.highlight}>生成評語</span>，生成完後點擊{' '}
-            <span className={styles.highlight}>下載結果</span>，就完成了！
-          </p>
-          <img
-            src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/process.png"
-            alt="Full Process"
-            className={styles.image}
-          />
+          {/* 方法二：直接在網頁上輸入學生名字 */}
+          <details>
+            <summary>方法二：直接在網頁上輸入學生名字</summary>
+            <p>
+              先點擊上方的 <span className={styles.highlight}>新增學生</span>，接著輸入學生名字、關鍵字，其中關鍵字可以直接點擊上方的關鍵字列表快速輸入，也可以自己增加常用關鍵字。
+            </p>
+            <img
+              src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/sample_user_input.png"
+              alt="Sample User Input"
+              className={styles.image}
+            />
+          </details>
+        </div>
+
+        {/* 步驟 3：生成評語 */}
+        <h3>3. 選擇評語長度並生成評語</h3>
+        <p>
+          選擇評語長度，點擊下方的 <span className={styles.highlight}>生成評語</span> 可以一次批量生成所有評語，生成完後點擊{' '}
+          <span className={styles.highlight}>下載結果</span>，就完成了！
+        </p>
+        <img
+          src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/process.png"
+          alt="Full Process"
+          className={styles.image}
+        />
+
+        {/* 小技巧 */}
+        <h3>小技巧</h3>
+        <p>
+          如果不想要每次都輸入 API Key，可以在第一次輸入完之後在瀏覽器的上方點擊鑰匙的圖標，按下儲存，下次只要打電腦密碼或指紋辨識就會自動輸入了。
+        </p>
+        <img
+          src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/save_api_key_tip.png"
+          alt="Save API Key Tip"
+          className={styles.image}
+        />
         </div>
       </Modal>
 
