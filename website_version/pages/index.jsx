@@ -935,16 +935,14 @@ export default function Home() {
           </span>
         </div>
         <div className={styles.projectInfo}>
-          This project is open-sourced under the MIT license. Visit the
-          project at{' '}
+          This project is open-sourced under the MIT license.{' '}
           <a
             href="https://github.com/moon-jam/AI_Gen_Semester_Comments_Tool"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Here
+            Visit the project on GitHub.
           </a>
-          .
         </div>
       </footer>
       <GoogleAnalytics gaId="G-SETTK23KS8" />
