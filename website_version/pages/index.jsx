@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -946,6 +947,7 @@ export default function Home() {
           .
         </div>
       </footer>
+      <GoogleAnalytics gaId="G-SETTK23KS8" />
     </div>
   );
 }
