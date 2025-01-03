@@ -35,6 +35,11 @@
   font-size: 16px;
 }
 
+.toggleApiKeyBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 /* API Key 輸入框 */
 .input {
   width: 100%;
@@ -58,6 +63,64 @@
   margin-bottom: 20px;
 }
 
+/* 自定義提示詞容器 */
+.customPromptContainer {
+  margin-top: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 基底提示詞選擇和自定義提示詞輸入框的標題及按鈕 */
+.promptHeader {
+  display: flex;
+  align-items: center;
+}
+
+.togglePromptBtn {
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.togglePromptBtn:hover {
+  background-color: #005bb5;
+}
+.togglePromptBtn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* 自定義提示詞輸入框 */
+.customPromptTextarea {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  resize: vertical;
+  box-sizing: border-box;
+  min-height: 200px; /* 初始高度 */
+  max-height: 700px; /* 最大高度 */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: max-height 0.3s ease;
+}
+
+/* 按鈕禁用時的樣式 */
+.button:disabled,
+.togglePromptBtn:disabled,
+.traitButton:disabled,
+.deleteTraitButton:disabled,
+.addTraitBtn:disabled,
+.regenButton:disabled {
+  background-color: #e0e0e0;
+  cursor: not-allowed;
+  color: #a0a0a0;
+}
+
 /* 上傳、新增學生按鈕 */
 .uploadButton {
   margin-top: 20px;
@@ -75,6 +138,10 @@
 }
 .addButton:hover {
   background-color: #4e8056;
+}
+.addButton:disabled {
+  background-color: #a5a5a5;
+  cursor: not-allowed;
 }
 
 /* 常見特質容器 */
@@ -102,6 +169,21 @@
   padding: 0.4rem 0.8rem;
   border-radius: 50%;
   cursor: pointer;
+}
+
+/* 自定義特質樣式 */
+.customTrait {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.deleteTraitButton {
+  background: transparent;
+  border: none;
+  color: #ff6666;
+  cursor: pointer;
+  margin-left: 4px;
 }
 
 /* 表格 & 外層 */

@@ -56,10 +56,38 @@ export default function Home() {
     '有潔癖',
   ]);
 
+  const [customTraits, setCustomTraits] = useState([]);
+
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [isPromptExpanded, setIsPromptExpanded] = useState(false); // 控制提示詞展開與折疊
+  const [basePromptSelection, setBasePromptSelection] = useState('short'); // 用於自定義提示詞的基底選擇
+
   // 取得當前年份
   const currentYear = new Date().getFullYear();
   const copyrightYear =
     currentYear === 2024 ? '2024' : `2024 – ${currentYear}`;
+
+  // ======== 載入自定義特質和自定義提示詞 ========
+  useEffect(() => {
+    // 載入自定義特質
+    const savedCustomTraits = JSON.parse(localStorage.getItem('customTraits')) || [];
+    setCustomTraits(savedCustomTraits);
+
+    // 載入 commentLength
+    const savedCommentLength = localStorage.getItem('commentLength') || 'short';
+    setCommentLength(savedCommentLength);
+
+    if (savedCommentLength === 'custom') {
+      // 如果是自定義，載入自定義提示詞，若無則使用 'short' 的提示詞作為基底
+      const savedCustomPrompt = localStorage.getItem('customPrompt') || prompts['short'];
+      setCustomPrompt(savedCustomPrompt);
+      setIsPromptExpanded(true); // 默認展開
+    } else {
+      // 如果不是自定義，清空自定義提示詞
+      setCustomPrompt('');
+      setIsPromptExpanded(false); // 默認收起
+    }
+  }, []);
 
   // ======== API Key ========
   const toggleShowApiKey = () => {
@@ -135,7 +163,9 @@ export default function Home() {
   const handleAddCustomTrait = () => {
     const trait = prompt('請輸入自訂的特質名稱：');
     if (trait && trait.trim()) {
-      setCommonTraits((prev) => [...prev, trait.trim()]);
+      const newCustomTraits = [...customTraits, trait.trim()];
+      setCustomTraits(newCustomTraits);
+      localStorage.setItem('customTraits', JSON.stringify(newCustomTraits));
     }
   };
   const handleAddTraitToFocused = (trait) => {
@@ -152,6 +182,12 @@ export default function Home() {
       newStudents[focusedStudentIndex].keywords = newKeywords;
       return newStudents;
     });
+  };
+  
+  const handleDeleteCustomTrait = (traitToDelete) => {
+    const newCustomTraits = customTraits.filter(trait => trait !== traitToDelete);
+    setCustomTraits(newCustomTraits);
+    localStorage.setItem('customTraits', JSON.stringify(newCustomTraits));
   };
 
   // ======== 編輯 ========
@@ -311,7 +347,10 @@ export default function Home() {
 
   // 產生 Prompt
   const buildSystemPrompt = (length) => {
-    const prompt = prompts[length] || prompts['short']; // 預設使用 short
+    if (length === 'custom') {
+      return customPrompt || prompts['short']; // 如果沒有自定義提示詞，使用 'short' 的提示詞
+    }
+    const prompt = prompts[length] || prompts['short']; // 預設使用 'short'
     return prompt;
   };
 
@@ -352,6 +391,48 @@ export default function Home() {
     const [removed] = newStudents.splice(result.source.index, 1);
     newStudents.splice(result.destination.index, 0, removed);
     setStudents(newStudents);
+  };
+
+  // ======== 自定義提示詞變更處理 ========
+  const handleCustomPromptChange = (e) => {
+    setCustomPrompt(e.target.value);
+    localStorage.setItem('customPrompt', e.target.value);
+  };
+
+  // ======== 評語長度選擇變更處理 ========
+  const handleCommentLengthChange = (e) => {
+    const newLength = e.target.value;
+    setCommentLength(newLength);
+    localStorage.setItem('commentLength', newLength);
+    if (newLength === 'custom') {
+      // 初始化自定義提示詞為當前選擇的 basePromptSelection 的提示詞
+      const initialPrompt = prompts[basePromptSelection] || prompts['short'];
+      setCustomPrompt(initialPrompt);
+      localStorage.setItem('customPrompt', initialPrompt);
+      setIsPromptExpanded(true); // 展開提示詞
+    } else {
+      // 清空自定義提示詞
+      setCustomPrompt('');
+      localStorage.removeItem('customPrompt');
+      setIsPromptExpanded(false); // 收起提示詞
+    }
+  };
+
+  // ======== 選擇基底提示詞 ========
+  const handleBasePromptSelection = (e) => {
+    const selectedBase = e.target.value;
+    setBasePromptSelection(selectedBase);
+    // 只有當 commentLength 是 'custom' 時，才更新 customPrompt
+    if (commentLength === 'custom') {
+      const newPrompt = prompts[selectedBase] || prompts['short'];
+      setCustomPrompt(newPrompt);
+      localStorage.setItem('customPrompt', newPrompt);
+    }
+  };
+
+  // ======== 切換自定義提示詞展開與折疊 ========
+  const togglePromptExpansion = () => {
+    setIsPromptExpanded((prev) => !prev);
   };
 
   return (
@@ -526,6 +607,7 @@ export default function Home() {
             type="button"
             onClick={toggleShowApiKey}
             className={styles.toggleApiKeyBtn}
+            disabled={!apiKey} // Disable toggle if no API key entered
           >
             <FontAwesomeIcon icon={showApiKey ? faEyeSlash : faEye} />
           </button>
@@ -547,14 +629,59 @@ export default function Home() {
         <select
           id="commentLength"
           value={commentLength}
-          onChange={(e) => setCommentLength(e.target.value)}
+          onChange={handleCommentLengthChange}
           disabled={!isValidKey || (isGenerating && !isPaused)}
         >
           <option value="short">短評 (2~3 句)</option>
           <option value="medium">中評 (4~5 句)</option>
           <option value="long">長評 (6~8 句)</option>
+          <option value="custom">自定義</option>
         </select>
       </div>
+
+      {/* 如果選擇了自定義，顯示基底選擇、展開/收起按鈕和輸入框 */}
+      {commentLength === 'custom' && (
+        <div className={styles.customPromptContainer}>
+          {/* 基底提示詞選擇 */}
+          <div className={styles.promptHeader}>
+            <label htmlFor="basePromptSelection">選擇基底提示詞：</label>
+            <select
+              id="basePromptSelection"
+              value={basePromptSelection}
+              onChange={handleBasePromptSelection}
+              disabled={!isValidKey || (isGenerating && !isPaused)}
+            >
+              <option value="short">短評 (2~3 句)</option>
+              <option value="medium">中評 (4~5 句)</option>
+              <option value="long">長評 (6~8 句)</option>
+            </select>
+          </div>
+
+          {/* 自定義提示詞輸入框和折疊按鈕 */}
+          <div className={styles.promptHeader} style={{ justifyContent: 'space-between' }}>
+            <label htmlFor="customPrompt">輸入自定義提示詞：</label>
+            <button
+              type="button"
+              onClick={togglePromptExpansion}
+              className={styles.togglePromptBtn}
+              disabled={!isValidKey || (isGenerating && !isPaused)}
+            >
+              {isPromptExpanded ? '收起提示詞' : '展開提示詞'}
+            </button>
+          </div>
+          {isPromptExpanded && (
+            <textarea
+              id="customPrompt"
+              value={customPrompt}
+              onChange={handleCustomPromptChange}
+              rows={4}
+              className={styles.customPromptTextarea}
+              placeholder="請輸入您的自定義提示詞..."
+              disabled={!isValidKey || (isGenerating && !isPaused)}
+            />
+          )}
+        </div>
+      )}
 
       {/* 上傳檔案 */}
       <input
@@ -576,21 +703,47 @@ export default function Home() {
 
       {/* 常見特質容器 */}
       <div className={styles.traitsContainer}>
+        {/* 預設特質 */}
         {commonTraits.map((trait, i) => (
           <button
-            key={i}
+            key={`common-${i}`}
             type="button"
             className={styles.traitButton}
             onClick={() => handleAddTraitToFocused(trait)}
+            disabled={!isValidKey || (isGenerating && !isPaused)}
           >
             {trait}
           </button>
         ))}
+
+        {/* 自定義特質 */}
+        {customTraits.map((trait, i) => (
+          <div key={`custom-${i}`} className={styles.customTrait}>
+            <button
+              type="button"
+              className={styles.traitButton}
+              onClick={() => handleAddTraitToFocused(trait)}
+              disabled={!isValidKey || (isGenerating && !isPaused)}
+            >
+              {trait}
+            </button>
+            <button
+              type="button"
+              className={styles.deleteTraitButton}
+              onClick={() => handleDeleteCustomTrait(trait)}
+              disabled={!isValidKey || (isGenerating && !isPaused)}
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </div>
+        ))}
+
         {/* 最後面一個加號，用於新增自訂特質 */}
         <button
           type="button"
           className={styles.addTraitBtn}
           onClick={handleAddCustomTrait}
+          disabled={!isValidKey || (isGenerating && !isPaused)}
         >
           <FontAwesomeIcon icon={faPlus} />
         </button>
@@ -692,14 +845,14 @@ export default function Home() {
                             <div className={styles.operationBtns}>
                               <button
                                 onClick={() => regenerateSingleComment(index)}
-                                disabled={isGenerating && !isPaused}
+                                disabled={!isValidKey || isGenerating && !isPaused}
                                 className={styles.regenButton}
                               >
                                 <FontAwesomeIcon icon={faRedo} /> 重生
                               </button>
                               <button
                                 onClick={() => handleDeleteStudent(index)}
-                                disabled={isGenerating && !isPaused}
+                                disabled={!isValidKey || isGenerating && !isPaused}
                                 className={styles.regenButton}
                                 style={{ backgroundColor: '#ff6666' }}
                               >
@@ -727,7 +880,7 @@ export default function Home() {
           {!isGenerating && !isPaused && (
             <button
               onClick={() => generateComments(false)}
-              disabled={isGenerating && !isPaused}
+              disabled={!isValidKey || isGenerating && !isPaused}
               className={styles.button}
             >
               生成評語
@@ -739,6 +892,7 @@ export default function Home() {
               onClick={pauseOrResume}
               className={styles.button}
               style={{ backgroundColor: '#999' }}
+              disabled={!isValidKey}
             >
               {isPaused ? (
                 <>
@@ -755,7 +909,7 @@ export default function Home() {
           {/* 若「全部完成」或正在生成中都可以下載。自行決定是否要在生成中禁用。 */}
           <button
             onClick={handleFileDownload}
-            disabled={false /* 也可改成 isGenerating && !isPaused */}
+            disabled={!isValidKey || isGenerating && !isPaused}
             className={styles.button}
           >
             下載結果
