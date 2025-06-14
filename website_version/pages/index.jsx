@@ -107,7 +107,7 @@ export default function Home() {
     try {
       const genAI = new GoogleGenerativeAI(key);
       const model = genAI.getGenerativeModel({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.0-flash-lite',
       });
       const chatSession = model.startChat({
         generationConfig: { maxOutputTokens: 10 },
@@ -229,7 +229,7 @@ export default function Home() {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash-lite',
       systemInstruction: buildSystemPrompt(commentLength),
     });
 
