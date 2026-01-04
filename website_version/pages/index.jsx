@@ -27,6 +27,14 @@ import prompts from '../config/prompts';
 
 Modal.setAppElement('#__next');
 
+const MODELS = [
+  'gemini-flash-latest',
+  'gemini-3-flash-preview',
+  'gemini-flash-lite-latest',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+];
+
 export default function Home() {
   // ======== 狀態管理 ========
   const [students, setStudents] = useState([]);
@@ -42,6 +50,9 @@ export default function Home() {
 
   // 用於在「新增學生」後，自動捲動到表格底部
   const tableEndRef = useRef(null);
+  
+  // 用於輪替模型的索引
+  const modelIndexRef = useRef(0);
 
   const [commonTraits, setCommonTraits] = useState([
     '活潑外向',
@@ -107,12 +118,8 @@ export default function Home() {
     try {
       const ai = new GoogleGenAI({ apiKey: key });
       await ai.models.generateContent({
-        model: 'gemini-2.5-flash-lite',
-        contents: [{ role: 'user', parts: [{ text: '測試' }] }],
-        config: { 
-          thinkingConfig: { thinkingBudget: 0 },
-          maxOutputTokens: 10, 
-        },
+        model: 'gemma-3-1b-it',
+        contents: "test",
       });
       setIsValidKey(true);
     } catch (error) {
@@ -253,42 +260,84 @@ export default function Home() {
     }
 
     const ai = new GoogleGenAI({ apiKey });
+    const BATCH_SIZE = 5;
 
     // 用 i = currentStudentIndex 開始，若已經生成到一半就從中斷點繼續
-    for (let i = currentStudentIndex; i < students.length; i++) {
+    // 這裡的 currentStudentIndex 指向的是「目前處理到的學生索引」
+    // 如果是批次處理，我們確保每次從正確的批次起始點開始
+    let startIndex = resume ? currentStudentIndex : 0;
+    
+    // 調整 startIndex 為 BATCH_SIZE 的倍數 (往下取整)，避免從批次中間開始導致重複或混亂
+    // 但如果 resume 是真，且 currentStudentIndex 剛好在中間，其實也沒關係，
+    // 只是為了簡單起見，我們假設 resume 時 index 總是會在批次的開頭 (因為 update 是一次 update 一批)
+    // 或者我們直接從 currentStudentIndex 開始切 slice 即可。
+    
+    for (let i = startIndex; i < students.length; i += BATCH_SIZE) {
       // 在每一輪檢查是否「暫停」
       if (isPaused) {
-        // 暫停後，就結束本次生成函式，但不把 isGenerating 改成 false
-        // 以便後續可以按「繼續」時再從這邊跳出
         setCurrentStudentIndex(i);
         return;
       }
 
+      // 準備批次資料
+      const batch = students.slice(i, i + BATCH_SIZE).map((student, idx) => ({
+        id: i + idx, // 使用絕對索引作為 ID，方便對應回原本的 array
+        name: student.name,
+        keywords: student.keywords
+      }));
+
+      // 如果批次為空 (例如已結束)，跳出
+      if (batch.length === 0) break;
+
       let success = false;
       while (!success) {
         try {
-          const comment = await generateComment(
-            ai,
-            students[i].name,
-            students[i].keywords
-          );
-          updateStudentComment(i, comment);
+          const results = await generateBatchComments(ai, batch);
+          
+          // 更新狀態
+          setStudents(prev => {
+            const next = [...prev];
+            results.forEach(result => {
+              if (next[result.id]) {
+                next[result.id].comment = result.comment;
+              }
+            });
+            return next;
+          });
+
           success = true;
-          // Add a delay to respect rate limits (e.g., Free tier is often ~15 RPM, so ~4s per request)
-          await new Promise((resolve) => setTimeout(resolve, 4000));
-          setCurrentStudentIndex(i + 1);
+          // Add a delay to respect rate limits
+          // 批次處理雖然減少請求數，但建議還是保留一點間隔
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+          
+          // 更新進度索引，指向下一批的開頭
+          setCurrentStudentIndex(i + BATCH_SIZE);
+          
         } catch (error) {
           console.error(
-            `生成 ${students[i].name} 的評語失敗，正在重試...`,
+            `批次生成 (Index ${i} ~ ${i + batch.length - 1}) 失敗，正在重試...`,
             error
           );
-          // Wait longer on error (e.g., 429 Rate Limit), 10 seconds default
+          // Wait longer on error (e.g., 429 Rate Limit)
           await new Promise((resolve) => setTimeout(resolve, 10000));
         }
+
         // 每次生成成功或失敗，都再檢查一次是否暫停
         if (isPaused) {
-          setCurrentStudentIndex(i);
-          return;
+          // 如果失敗後暫停，或成功後暫停，都記錄當前 i 為起點
+          // 若成功，上面的 setCurrentStudentIndex 已經更新為 i + BATCH_SIZE，
+          // 但這裡不需要 return，因為迴圈會繼續。
+          // 只有在迴圈開頭檢查 isPaused 比較保險，
+          // 但為了即時性，這裡也可以 return。
+          // 不過因為我們已經更新了 state 和 currentIndex，
+          // 若這裡 return，下次 resume 會從 i + BATCH_SIZE 開始 (因為上方已經設了)
+          // 若是 catch 裡面的失敗，i 沒變，下次 resume 從 i 開始。
+          // 為了安全，我們在 catch 之後檢查暫停:
+          if (isPaused) {
+             // 如果是在 catch 之後暫停，currentStudentIndex 應該還是 i (因為沒成功)
+             // 如果成功，currentStudentIndex 已經是 i + BATCH_SIZE
+             return;
+          }
         }
       }
     }
@@ -314,12 +363,18 @@ export default function Home() {
       setIsGenerating(true);
       const ai = new GoogleGenAI({ apiKey });
       
-      const comment = await generateComment(
-        ai,
-        students[index].name,
-        students[index].keywords
-      );
-      updateStudentComment(index, comment);
+      // 構造單人批次
+      const batch = [{
+        id: index,
+        name: students[index].name,
+        keywords: students[index].keywords
+      }];
+
+      const results = await generateBatchComments(ai, batch);
+      
+      if (results && results.length > 0) {
+        updateStudentComment(index, results[0].comment);
+      }
     } catch (error) {
       console.error(`重新生成 ${students[index].name} 的評語失敗`, error);
       alert(`重新生成 ${students[index].name} 的評語失敗，請稍後再試`);
@@ -341,14 +396,22 @@ export default function Home() {
     }
   };
 
-  // 實際呼叫 API 生成
-  const generateComment = async (ai, name, keywords) => {
+  // 實際呼叫 API 生成 (批次)
+  const generateBatchComments = async (ai, batch) => {
+    // Round-robin selection
+    const currentModelIndex = modelIndexRef.current % MODELS.length;
+    const modelName = MODELS[currentModelIndex];
+    console.log(`Using model [${currentModelIndex}]: ${modelName}`);
+    
+    // Increment for next call
+    modelIndexRef.current += 1;
+
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-lite',
+      model: modelName,
       contents: [
         {
           role: 'user',
-          parts: [{ text: `["${name}", "${keywords}"]` }],
+          parts: [{ text: JSON.stringify(batch) }],
         },
       ],
       config: {
@@ -357,13 +420,21 @@ export default function Home() {
         temperature: 1.2,
         topP: 0.95,
         topK: 64,
-        maxOutputTokens: 1024,
-        responseMimeType: 'text/plain',
+        maxOutputTokens: 8192, // 增加 Token 數以容納批次回應
+        responseMimeType: 'application/json',
       },
     });
     // Check for text property (new SDK) or fallback to standard candidate structure
-    const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    return text;
+    const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+    
+    // 簡單的清理與解析
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        console.error("JSON Parse Error:", e);
+        console.log("Raw Text:", text);
+        return [];
+    }
   };
 
   // 更新 comment
