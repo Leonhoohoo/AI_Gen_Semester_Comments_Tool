@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import { GoogleAnalytics } from '@next/third-parties/google';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faPaw,
@@ -18,7 +18,7 @@ import {
   faPlay,
 } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-modal';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 import styles from '../styles/Home.module.css';
 import '@fortawesome/fontawesome-svg-core/styles.css';
@@ -105,15 +105,15 @@ export default function Home() {
       return;
     }
     try {
-      const genAI = new GoogleGenerativeAI(key);
-      const model = genAI.getGenerativeModel({
-        model: 'gemini-2.0-flash-lite',
+      const ai = new GoogleGenAI({ apiKey: key });
+      await ai.models.generateContent({
+        model: 'gemini-2.5-flash-lite',
+        contents: [{ role: 'user', parts: [{ text: '測試' }] }],
+        config: { 
+          thinkingConfig: { thinkingBudget: 0 },
+          maxOutputTokens: 10, 
+        },
       });
-      const chatSession = model.startChat({
-        generationConfig: { maxOutputTokens: 10 },
-        history: [],
-      });
-      await chatSession.sendMessage('測試');
       setIsValidKey(true);
     } catch (error) {
       console.error('API Key 驗證失敗', error);
@@ -126,22 +126,47 @@ export default function Home() {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    reader.onload = async (e) => {
+      const data = e.target.result;
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(data);
+      const worksheet = workbook.worksheets[0];
+      const newStudents = [];
 
-      const formattedData = jsonData
-        .filter((row) => row[0] || row[1])
-        .map((row) => ({
-          name: row[0] || '',
-          keywords: row[1] || '',
-          comment: '',
-        }));
-
-      setStudents(formattedData);
+      worksheet.eachRow((row, rowNumber) => {
+        // Skip header row if necessary, assuming first row is header if it contains specific text
+        // or just rely on user data. Let's assume row 1 is data if it looks like data, 
+        // but typically Excel files have headers.
+        // The original logic with xlsx sheet_to_json with header: 1 produces an array of arrays.
+        // If rowNumber is 1, it might be header. 
+        // However, the original code used header:1 which means it reads raw data including header.
+        // It then filtered: .filter((row) => row[0] || row[1]).map(...)
+        // Let's mimic that behavior. 
+        
+        // exceljs row values start from index 1.
+        // row.values is [empty, col1, col2, ...]
+        
+        const rowValues = row.values;
+        // rowValues[1] is column A, rowValues[2] is column B
+        const name = rowValues[1] ? rowValues[1].toString() : '';
+        const keywords = rowValues[2] ? rowValues[2].toString() : '';
+        
+        if (name || keywords) {
+           newStudents.push({
+            name: name,
+            keywords: keywords,
+            comment: '',
+           });
+        }
+      });
+      
+      // If the first row looks like a header (e.g. "姓名", "特質"), we might want to skip it?
+      // The original code: jsonData.filter(...) map(...). 
+      // If the user's excel has "Name" in A1, it would be imported as a student named "Name".
+      // Let's keep it simple and import everything that has content, just like before.
+      // But typically row 1 is header.
+      
+      setStudents(newStudents);
       setTimeout(() => {
         scrollToBottom();
       }, 200);
@@ -227,11 +252,7 @@ export default function Home() {
       setIsGenerating(true);
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-lite',
-      systemInstruction: buildSystemPrompt(commentLength),
-    });
+    const ai = new GoogleGenAI({ apiKey });
 
     // 用 i = currentStudentIndex 開始，若已經生成到一半就從中斷點繼續
     for (let i = currentStudentIndex; i < students.length; i++) {
@@ -247,19 +268,22 @@ export default function Home() {
       while (!success) {
         try {
           const comment = await generateComment(
-            model,
+            ai,
             students[i].name,
             students[i].keywords
           );
           updateStudentComment(i, comment);
           success = true;
+          // Add a delay to respect rate limits (e.g., Free tier is often ~15 RPM, so ~4s per request)
+          await new Promise((resolve) => setTimeout(resolve, 4000));
           setCurrentStudentIndex(i + 1);
         } catch (error) {
           console.error(
             `生成 ${students[i].name} 的評語失敗，正在重試...`,
             error
           );
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          // Wait longer on error (e.g., 429 Rate Limit), 10 seconds default
+          await new Promise((resolve) => setTimeout(resolve, 10000));
         }
         // 每次生成成功或失敗，都再檢查一次是否暫停
         if (isPaused) {
@@ -288,14 +312,10 @@ export default function Home() {
 
     try {
       setIsGenerating(true);
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: 'gemini-1.5-flash',
-        systemInstruction: buildSystemPrompt(commentLength),
-      });
-
+      const ai = new GoogleGenAI({ apiKey });
+      
       const comment = await generateComment(
-        model,
+        ai,
         students[index].name,
         students[index].keywords
       );
@@ -322,19 +342,28 @@ export default function Home() {
   };
 
   // 實際呼叫 API 生成
-  const generateComment = async (model, name, keywords) => {
-    const chatSession = model.startChat({
-      generationConfig: {
+  const generateComment = async (ai, name, keywords) => {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-lite',
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: `["${name}", "${keywords}"]` }],
+        },
+      ],
+      config: {
+        systemInstruction: { parts: [{ text: buildSystemPrompt(commentLength) }] },
+        thinkingConfig: { thinkingBudget: 0 },
         temperature: 1.2,
         topP: 0.95,
         topK: 64,
         maxOutputTokens: 1024,
         responseMimeType: 'text/plain',
       },
-      history: [],
     });
-    const response = await chatSession.sendMessage(`["${name}", "${keywords}"]`);
-    return response.response.text();
+    // Check for text property (new SDK) or fallback to standard candidate structure
+    const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    return text;
   };
 
   // 更新 comment
@@ -356,21 +385,28 @@ export default function Home() {
   };
 
   // 下載結果
-  const handleFileDownload = () => {
-    const worksheetData = students.map((student, idx) => ({
-      編號: idx + 1,
-      學生姓名: student.name,
-      關鍵詞: student.keywords,
-      評語: student.comment,
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Comments');
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: 'xlsx',
-      type: 'array',
+  const handleFileDownload = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Comments');
+
+    worksheet.columns = [
+      { header: '編號', key: 'id', width: 10 },
+      { header: '學生姓名', key: 'name', width: 20 },
+      { header: '關鍵詞', key: 'keywords', width: 40 },
+      { header: '評語', key: 'comment', width: 60 },
+    ];
+
+    students.forEach((student, idx) => {
+      worksheet.addRow({
+        id: idx + 1,
+        name: student.name,
+        keywords: student.keywords,
+        comment: student.comment,
+      });
     });
-    const data = new Blob([excelBuffer], {
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const data = new Blob([buffer], {
       type: 'application/octet-stream',
     });
     saveAs(data, 'output.xlsx');
