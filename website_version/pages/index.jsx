@@ -523,6 +523,21 @@ export default function Home() {
           alt="Step 5"
           className={styles.image}
         />
+        <img
+          src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-6.png"
+          alt="Step 6"
+          className={styles.image}
+        />
+        <img
+          src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-7.png"
+          alt="Step 7"
+          className={styles.image}
+        />
+        <img
+          src="https://raw.githubusercontent.com/moon-jam/AI_Gen_Semester_Comments_Tool/main/assets/step-8.png"
+          alt="Step 8"
+          className={styles.image}
+        />
 
         {/* 方法選擇 */}
         <h3>2. 選擇上傳學生名單的方法</h3>

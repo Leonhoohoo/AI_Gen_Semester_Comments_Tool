@@ -48,12 +48,16 @@ npm run dev
 
 ### 使用教學
 
-- 先到 [Google AI Studio](https://aistudio.google.com/app/apikey) 建立 API Key (如下圖)，接著將 API Key 複製然後貼到 [網頁](https://ai-comments.moon-jam.me) 的框框中，並確認出現 ✅ 圖示，代表 API Key 設定成功 (如果按照下圖無法順利創建，可以參考這個[影片](https://youtu.be/ehm3-xoJLsc))
-![到 [Google AI Studio](https://aistudio.google.com/app/apikey) 建立 API Key - 1](assets/step-1.png)
-![到 [Google AI Studio](https://aistudio.google.com/app/apikey) 建立 API Key - 2](assets/step-2.png)
-![到 [Google AI Studio](https://aistudio.google.com/app/apikey) 建立 API Key - 3](assets/step-3.png)
-![到 [Google AI Studio](https://aistudio.google.com/app/apikey) 建立 API Key - 4](assets/step-4.png)
-![將 API Key 複製然後貼到[網頁](https://ai-comments.moon-jam.me)的框框中](assets/step-5.png)
+- 先到 [Google AI Studio](https://aistudio.google.com/app/api-keys) 建立 API Key (如下圖)，接著將 API Key 複製然後貼到 [網頁](https://ai-comments.moon-jam.me) 的框框中，並確認出現 ✅ 圖示，代表 API Key 設定成功 (如果按照下圖無法順利創建，可以參考這個[影片](https://youtu.be/ehm3-xoJLsc))
+![到 [Google AI Studio](https://aistudio.google.com/app/api-keys) 建立 API Key - 1](assets/step-1.png)
+![到 [Google AI Studio](https://aistudio.google.com/app/api-keys) 建立 API Key - 2](assets/step-2.png)
+![到 [Google AI Studio](https://aistudio.google.com/app/api-keys) 建立 API Key - 3](assets/step-3.png)
+![到 [Google AI Studio](https://aistudio.google.com/app/api-keys) 建立 API Key - 4](assets/step-4.png)
+![到 [Google AI Studio](https://aistudio.google.com/app/api-keys) 建立 API Key - 5](assets/step-5.png)
+![到 [Google AI Studio](https://aistudio.google.com/app/api-keys) 建立 API Key - 6](assets/step-6.png)
+![到 [Google AI Studio](https://aistudio.google.com/app/api-keys) 建立 API Key - 7](assets/step-7.png)
+![到 [Google AI Studio](https://aistudio.google.com/app/api-keys) 建立 API Key - 8](assets/step-8.png)
+〔方案選單〕
 - <details>
   <summary> 方法一：上傳已經有學生名單的 Excel </summary>
 
