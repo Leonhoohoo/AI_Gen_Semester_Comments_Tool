@@ -28,7 +28,6 @@ import prompts from '../config/prompts';
 Modal.setAppElement('#__next');
 
 const MODELS = [
-  'gemini-flash-latest',
   'gemini-3-flash-preview',
   'gemini-flash-lite-latest',
   'gemini-2.5-flash',
