@@ -57,7 +57,7 @@ export default function Home() {
   const [commonTraits, setCommonTraits] = useState([
     '活潑外向',
     '心思細膩',
-    '反應快',
+    '思維靈活',
     '樂於助人',
     '領導力佳',
     '語文能力強',
@@ -65,7 +65,15 @@ export default function Home() {
     '數理邏輯好',
     '藝術天份高',
     '協調性佳',
-    '有潔癖',
+    '好奇心',
+    '團結合作',
+    '積極進取',
+    '觀察細膩',
+    '自律',
+    '責任心強',
+    '處變不驚',
+    '尊重他人',
+    '堅持不懈',
   ]);
 
   const [customTraits, setCustomTraits] = useState([]);
@@ -118,7 +126,7 @@ export default function Home() {
     try {
       const ai = new GoogleGenAI({ apiKey: key });
       await ai.models.generateContent({
-        model: 'gemma-3-1b-it',
+        model: 'gemini-2.5-flash',
         contents: "test",
       });
       setIsValidKey(true);
